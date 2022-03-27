@@ -1,4 +1,5 @@
 import { Module, ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { MessagesModule } from './messages/messages.module';
 
 @Module({
@@ -15,6 +16,8 @@ export class AppModule {
         whitelist: true,
       }),
     );
+
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     return app;
   }
