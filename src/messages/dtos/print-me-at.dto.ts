@@ -1,6 +1,7 @@
-import { IsPositive, IsString } from 'class-validator';
+import { IsPositive, IsString, MinLength } from 'class-validator';
 
 export class PrintMeAtDto {
+  @MinLength(1)
   @IsString()
   readonly text: string;
 
