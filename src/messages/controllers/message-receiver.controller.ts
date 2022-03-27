@@ -4,7 +4,7 @@ import { PrintMeAtDto } from '../dtos/print-me-at.dto';
 @Controller('printMeAt')
 export class MessageReceiverController {
   @Get('/')
-  async printMeAt(@Query() printMeAtDto: PrintMeAtDto) {
+  async printMeAt (@Query() printMeAtDto: PrintMeAtDto) {
     return printMeAtDto;
   }
 }
