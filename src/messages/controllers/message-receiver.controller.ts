@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, Query } from '@nestjs/common';
+import { ResponsePayload } from '../../common/entities/response-payload.entity';
 import { PrintMeAtDto } from '../dtos/print-me-at.dto';
 
 @Controller('printMeAt')
 export class MessageReceiverController {
   @Get('/')
+  @HttpCode(201)
   async printMeAt (@Query() printMeAtDto: PrintMeAtDto) {
-    return printMeAtDto;
+    return ResponsePayload.Succeeded(!!printMeAtDto);
   }
 }
