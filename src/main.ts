@@ -6,7 +6,7 @@ async function bootstrap () {
 
   AppModule.bootstrap(app);
 
-  // TODO: add configuration
+  // TODO: Read port from config
   await app.listen(3000);
 }
 bootstrap();

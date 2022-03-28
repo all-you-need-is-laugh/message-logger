@@ -38,7 +38,7 @@ module.exports = {
     'no-restricted-imports': 'off',
     'no-undef': 'error',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', { 'varsIgnorePattern': '_.*' }],
     'object-curly-spacing': ['warn', 'always'],
     'object-property-newline': ['warn', { allowAllPropertiesOnSameLine: true} ],
     'quotes': ['warn', 'single', { 'avoidEscape': true }],
@@ -63,6 +63,10 @@ module.exports = {
       ],
       'skipWords': [
         'dto',
+        'localhost',
+        'redis',
+        'zadd',
+        'zrange'
       ],
       'strings': true,
       'templates': true
