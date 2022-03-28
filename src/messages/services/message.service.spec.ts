@@ -10,7 +10,7 @@ describe('MessageService', () => {
   let messageService: MessageService;
   let redis: Redis;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
         // TODO: read test config from service
@@ -27,13 +27,15 @@ describe('MessageService', () => {
 
     messageService = moduleRef.get<MessageService>(MessageService);
     redis = moduleRef.get<RedisService>(RedisService).getClient();
+
+    await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
   afterEach(async () => {
     await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
-  it('should add message in ordered by timestamp list', async () => {
+  it('should add message to ordered by timestamp list', async () => {
     const startMoment = Date.now();
     const firstMessage        = new Message(startMoment + 10 * SECONDS, 'First');
     const secondMessage       = new Message(startMoment + 20 * SECONDS, 'Second');
@@ -57,7 +59,7 @@ describe('MessageService', () => {
     expect(storedMessages.slice(2, 4)).toContainEqual({ ...anotherThirdMessage });
   });
 
-  it('should list messages from specified time range', async () => {
+  it('should list messages for specified time range', async () => {
     const startMoment = Date.now();
     const firstMessage  = new Message(startMoment + 10 * SECONDS, 'First');
     const secondMessage = new Message(startMoment + 20 * SECONDS, 'Second');
@@ -84,5 +86,32 @@ describe('MessageService', () => {
       toTime: startMoment + 32 * SECONDS
     }))
       .toEqual([]);
+  });
+
+  it('should remove message from the list', async () => {
+    const startMoment = Date.now();
+    const firstMessage  = new Message(startMoment + 10 * SECONDS, 'First');
+    const secondMessage = new Message(startMoment + 20 * SECONDS, 'Second');
+    const thirdMessage  = new Message(startMoment + 30 * SECONDS, 'Third');
+
+    expect(await messageService.publishMessage(thirdMessage)).toBe(true);
+    expect(await messageService.publishMessage(firstMessage)).toBe(true);
+    expect(await messageService.publishMessage(secondMessage)).toBe(true);
+
+    const allAddedMessages = await messageService.listMessages({
+      fromTime: startMoment,
+      toTime: startMoment + 100 * SECONDS
+    });
+
+    expect(allAddedMessages).toEqual([ { ...firstMessage }, { ...secondMessage }, { ...thirdMessage } ]);
+
+    expect(await messageService.remove(secondMessage)).toBe(true);
+
+    const restMessages = await messageService.listMessages({
+      fromTime: startMoment,
+      toTime: startMoment + 100 * SECONDS
+    });
+
+    expect(restMessages).toEqual([ { ...firstMessage }, { ...thirdMessage } ]);
   });
 });

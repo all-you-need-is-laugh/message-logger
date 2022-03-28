@@ -66,7 +66,8 @@ module.exports = {
         'localhost',
         'redis',
         'zadd',
-        'zrange'
+        'zrange',
+        'zrem'
       ],
       'strings': true,
       'templates': true
