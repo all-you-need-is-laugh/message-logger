@@ -12,7 +12,7 @@ interface ListMessagesParams {
 }
 
 @Injectable()
-export class MessageReceiverService {
+export class MessageService {
   private readonly redis: Redis;
 
   static readonly MESSAGES_SET_NAME = 'ordered_messages';
@@ -32,7 +32,7 @@ export class MessageReceiverService {
 
   async listMessages ({ fromTime = 0, toTime = Date.now(), count = 10, offset = 0 }: ListMessagesParams) {
     const records = await this.redis.zrange(
-      MessageReceiverService.MESSAGES_SET_NAME,
+      MessageService.MESSAGES_SET_NAME,
       fromTime, toTime, 'BYSCORE', 'LIMIT', offset, count
     );
 
@@ -41,7 +41,7 @@ export class MessageReceiverService {
 
   async publishMessage (message: Message) {
     const result = await this.redis.zadd(
-      MessageReceiverService.MESSAGES_SET_NAME,
+      MessageService.MESSAGES_SET_NAME,
       message.timestamp, this.messageToRedisRecord(message)
     );
 

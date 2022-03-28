@@ -2,12 +2,12 @@ import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { Message } from '../entities/message.entity';
-import { MessageReceiverService } from './message-receiver.service';
+import { MessageService } from './message.service';
 
 const SECONDS = 1000;
 
-describe('MessageReceiverService', () => {
-  let messageReceiverService: MessageReceiverService;
+describe('MessageService', () => {
+  let messageService: MessageService;
   let redis: Redis;
 
   beforeEach(async () => {
@@ -22,15 +22,15 @@ describe('MessageReceiverService', () => {
           }
         })
       ],
-      providers: [ MessageReceiverService ],
+      providers: [ MessageService ],
     }).compile();
 
-    messageReceiverService = moduleRef.get<MessageReceiverService>(MessageReceiverService);
+    messageService = moduleRef.get<MessageService>(MessageService);
     redis = moduleRef.get<RedisService>(RedisService).getClient();
   });
 
   afterEach(async () => {
-    await redis.del(MessageReceiverService.MESSAGES_SET_NAME);
+    await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
   it('should add message in ordered by timestamp list', async () => {
@@ -40,12 +40,12 @@ describe('MessageReceiverService', () => {
     const thirdMessage        = new Message(startMoment + 30 * SECONDS, 'Third');
     const anotherThirdMessage = new Message(startMoment + 30 * SECONDS, 'Another Third');
 
-    expect(await messageReceiverService.publishMessage(thirdMessage)).toBe(true);
-    expect(await messageReceiverService.publishMessage(firstMessage)).toBe(true);
-    expect(await messageReceiverService.publishMessage(secondMessage)).toBe(true);
-    expect(await messageReceiverService.publishMessage(anotherThirdMessage)).toBe(true);
+    expect(await messageService.publishMessage(thirdMessage)).toBe(true);
+    expect(await messageService.publishMessage(firstMessage)).toBe(true);
+    expect(await messageService.publishMessage(secondMessage)).toBe(true);
+    expect(await messageService.publishMessage(anotherThirdMessage)).toBe(true);
 
-    const storedMessages = await messageReceiverService.listMessages({
+    const storedMessages = await messageService.listMessages({
       fromTime: startMoment,
       toTime: startMoment + 100 * SECONDS
     });
@@ -63,23 +63,23 @@ describe('MessageReceiverService', () => {
     const secondMessage = new Message(startMoment + 20 * SECONDS, 'Second');
     const thirdMessage  = new Message(startMoment + 30 * SECONDS, 'Third');
 
-    expect(await messageReceiverService.publishMessage(thirdMessage)).toBe(true);
-    expect(await messageReceiverService.publishMessage(firstMessage)).toBe(true);
-    expect(await messageReceiverService.publishMessage(secondMessage)).toBe(true);
+    expect(await messageService.publishMessage(thirdMessage)).toBe(true);
+    expect(await messageService.publishMessage(firstMessage)).toBe(true);
+    expect(await messageService.publishMessage(secondMessage)).toBe(true);
 
-    expect(await messageReceiverService.listMessages({ fromTime: 0, toTime: startMoment }))
+    expect(await messageService.listMessages({ fromTime: 0, toTime: startMoment }))
       .toEqual([]);
 
-    expect(await messageReceiverService.listMessages({ fromTime: 0, toTime: startMoment + 10 * SECONDS }))
+    expect(await messageService.listMessages({ fromTime: 0, toTime: startMoment + 10 * SECONDS }))
       .toEqual([ { ...firstMessage } ]);
 
-    expect(await messageReceiverService.listMessages({
+    expect(await messageService.listMessages({
       fromTime: startMoment + 10 * SECONDS,
       toTime: startMoment + 25 * SECONDS
     }))
       .toEqual([ { ...firstMessage }, { ...secondMessage } ]);
 
-    expect(await messageReceiverService.listMessages({
+    expect(await messageService.listMessages({
       fromTime: startMoment + 31 * SECONDS,
       toTime: startMoment + 32 * SECONDS
     }))
