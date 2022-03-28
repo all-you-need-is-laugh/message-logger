@@ -1,0 +1,4 @@
+export enum PrintMessageIterationStatus {
+  MESSAGE_HANDLED = 'MESSAGE_HANDLED',
+  NO_MESSAGES_ARE_READY = 'NO_MESSAGES_ARE_READY',
+}

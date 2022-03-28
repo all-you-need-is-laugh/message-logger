@@ -29,7 +29,7 @@ export class MessageService {
     return new Message(parseInt(timestamp, 10), text, id);
   }
 
-  async listMessages ({ fromTime = 0, toTime = Date.now(), count = 10, offset = 0 }: ListMessagesParams) {
+  async listMessages ({ fromTime = 0, toTime = Date.now(), count = 10, offset = 0 }: ListMessagesParams = {}) {
     const records = await this.redis.zrange(
       MessageService.MESSAGES_SET_NAME,
       fromTime, toTime, 'BYSCORE', 'LIMIT', offset, count

@@ -65,6 +65,7 @@ module.exports = {
         'dto',
         'localhost',
         'redis',
+        'unref',
         'zadd',
         'zrange',
         'zrem'
