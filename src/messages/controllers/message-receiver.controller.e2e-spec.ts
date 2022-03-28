@@ -9,18 +9,23 @@ const stringifyQuery = (params: Record<string, string>): string => {
 };
 
 describe('MessageReceiverController (e2e)', () => {
+  let app: INestApplication;
   let server;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [ AppModule ], }).compile();
 
-    const app: INestApplication = moduleFixture.createNestApplication();
+    app = moduleFixture.createNestApplication();
 
     AppModule.bootstrap(app);
 
     await app.init();
 
     server = app.getHttpServer();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('[GET] /printMeAt', () => {
