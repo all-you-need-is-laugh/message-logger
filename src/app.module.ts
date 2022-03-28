@@ -1,5 +1,5 @@
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { Module, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Module, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { MessagesModule } from './messages/messages.module';
 
@@ -17,7 +17,7 @@ import { MessagesModule } from './messages/messages.module';
 })
 export class AppModule {
   // TODO: set TS config setting "noImplicitAny": true,
-  static async bootstrap (app) {
+  static async bootstrap (app: INestApplication) {
     app.useGlobalPipes(
       new ValidationPipe({
         forbidNonWhitelisted: true,
@@ -28,6 +28,8 @@ export class AppModule {
     );
 
     app.useGlobalFilters(new HttpExceptionFilter());
+
+    app.enableShutdownHooks();
 
     return app;
   }
