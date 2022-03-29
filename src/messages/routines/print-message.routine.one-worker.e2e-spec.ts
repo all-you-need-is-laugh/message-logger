@@ -71,5 +71,33 @@ describe('PrintMessageRoutine', () => {
 
       expect(result).toEqual(PrintMessageIterationStatus.MESSAGE_HANDLED);
     });
+
+    it('should handle errors (for example: no connection to Redis)', async () => {
+      const moduleRef = await Test.createTestingModule({
+        imports: [
+          RedisModule.forRoot({
+            config: {
+              host: 'wrong-redis-server-host',
+              // disable retry for test
+              retryStrategy: () => null,
+            }
+          })
+        ],
+        providers: [
+          MessageService,
+          PrintMessageRoutine,
+          {
+            provide: MessagePrintingService,
+            useValue: { printMessage: () => true }
+          }
+        ]
+      }).compile();
+
+      printMessageRoutine = moduleRef.get<PrintMessageRoutine>(PrintMessageRoutine);
+
+      const result = await printMessageRoutine.runIteration();
+
+      expect(result).toEqual(PrintMessageIterationStatus.ERROR_OCCURRED);
+    });
   });
 });
