@@ -47,24 +47,27 @@ describe('PrintMessageRoutine', () => {
     await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
-  it('should handle empty list of ready messages', async () => {
-    const result = await printMessageRoutine.runIteration();
+  describe('One worker', () => {
 
-    expect(result).toEqual({ status: PrintMessageIterationStatus.NO_MESSAGES_ARE_READY });
-  });
+    it('should handle empty list of ready messages', async () => {
+      const result = await printMessageRoutine.runIteration();
 
-  it('should handle first ready message from the queue', async () => {
-    const startMoment = Date.now();
-    const firstMessage  = new Message(startMoment - 2 * SECONDS, 'First');
-    const secondMessage = new Message(startMoment - 1 * SECONDS, 'Second');
+      expect(result).toEqual({ status: PrintMessageIterationStatus.NO_MESSAGES_ARE_READY });
+    });
 
-    expect(await messageService.publishMessage(firstMessage)).toBe(true);
-    expect(await messageService.publishMessage(secondMessage)).toBe(true);
+    it('should handle first ready message from the queue', async () => {
+      const startMoment = Date.now();
+      const firstMessage  = new Message(startMoment - 2 * SECONDS, 'First');
+      const secondMessage = new Message(startMoment - 1 * SECONDS, 'Second');
 
-    const result = await printMessageRoutine.runIteration();
+      expect(await messageService.publishMessage(firstMessage)).toBe(true);
+      expect(await messageService.publishMessage(secondMessage)).toBe(true);
 
-    expect(result).toEqual({
-      status: PrintMessageIterationStatus.MESSAGE_HANDLED
+      const result = await printMessageRoutine.runIteration();
+
+      expect(result).toEqual({
+        status: PrintMessageIterationStatus.MESSAGE_HANDLED
+      });
     });
   });
 });
