@@ -5,7 +5,7 @@ import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
-    MessagesModule,
+    MessagesModule.register(),
     // TODO: Read Redis config from config
     RedisModule.forRoot({
       config: {

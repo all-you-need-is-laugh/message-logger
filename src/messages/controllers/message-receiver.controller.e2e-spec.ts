@@ -1,8 +1,10 @@
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
 import { ResponsePayload } from '../../common/entities/response-payload.entity';
+import { MessagesModule } from '../messages.module';
 
 const stringifyQuery = (params: Record<string, string>): string => {
   return new URLSearchParams(params).toString();
@@ -13,9 +15,21 @@ describe('MessageReceiverController (e2e)', () => {
   let server;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [ AppModule ], }).compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        // TODO: read test config from service
+        RedisModule.forRoot({
+          config: {
+            host: 'localhost',
+            port: 6379,
+            db: 2
+          }
+        }),
+        MessagesModule.register({ skipRoutines: true })
+      ],
+    }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleRef.createNestApplication();
 
     AppModule.bootstrap(app);
 

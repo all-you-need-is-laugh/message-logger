@@ -3,14 +3,14 @@ import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { Message } from '../entities/message.entity';
 import { PrintMessageIterationStatus } from '../enums/print-message-iteration-status';
-import { MessagePrintingService } from '../services/message-printing.service';
-import { MessageService } from '../services/message.service';
-import { PrintMessageRoutine } from './print-message.routine';
+import { MessageHandlerService } from './message-handler.service';
+import { MessagePrintingService } from './message-printing.service';
+import { MessageService } from './message.service';
 
 const SECONDS = 1000;
 
-describe('PrintMessageRoutine', () => {
-  let printMessageRoutine: PrintMessageRoutine;
+describe('MessageHandlerService', () => {
+  let messageHandlerService: MessageHandlerService;
   let messageService: MessageService;
   let redis: Redis;
 
@@ -28,7 +28,7 @@ describe('PrintMessageRoutine', () => {
       ],
       providers: [
         MessageService,
-        PrintMessageRoutine,
+        MessageHandlerService,
         {
           provide: MessagePrintingService,
           useValue: { printMessage: () => true }
@@ -37,7 +37,7 @@ describe('PrintMessageRoutine', () => {
     }).compile();
 
     messageService = moduleRef.get<MessageService>(MessageService);
-    printMessageRoutine = moduleRef.get<PrintMessageRoutine>(PrintMessageRoutine);
+    messageHandlerService = moduleRef.get<MessageHandlerService>(MessageHandlerService);
     redis = moduleRef.get<RedisService>(RedisService).getClient();
 
     await redis.del(MessageService.MESSAGES_SET_NAME);
@@ -54,7 +54,7 @@ describe('PrintMessageRoutine', () => {
   describe('One worker', () => {
 
     it('should handle empty list of ready messages', async () => {
-      const result = await printMessageRoutine.runIteration();
+      const result = await messageHandlerService.runIteration();
 
       expect(result).toEqual(PrintMessageIterationStatus.NO_MESSAGES_ARE_READY);
     });
@@ -67,7 +67,7 @@ describe('PrintMessageRoutine', () => {
       expect(await messageService.publishMessage(firstMessage)).toBe(true);
       expect(await messageService.publishMessage(secondMessage)).toBe(true);
 
-      const result = await printMessageRoutine.runIteration();
+      const result = await messageHandlerService.runIteration();
 
       expect(result).toEqual(PrintMessageIterationStatus.MESSAGE_HANDLED);
     });
@@ -85,7 +85,7 @@ describe('PrintMessageRoutine', () => {
         ],
         providers: [
           MessageService,
-          PrintMessageRoutine,
+          MessageHandlerService,
           {
             provide: MessagePrintingService,
             useValue: { printMessage: () => true }
@@ -93,9 +93,9 @@ describe('PrintMessageRoutine', () => {
         ]
       }).compile();
 
-      printMessageRoutine = moduleRef.get<PrintMessageRoutine>(PrintMessageRoutine);
+      messageHandlerService = moduleRef.get<MessageHandlerService>(MessageHandlerService);
 
-      const result = await printMessageRoutine.runIteration();
+      const result = await messageHandlerService.runIteration();
 
       expect(result).toEqual(PrintMessageIterationStatus.ERROR_OCCURRED);
     });
