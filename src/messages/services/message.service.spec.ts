@@ -35,6 +35,10 @@ describe('MessageService', () => {
     await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
+  afterAll(async () => {
+    await redis.quit();
+  });
+
   it('should add message to ordered by timestamp list', async () => {
     const startMoment = Date.now();
     const firstMessage        = new Message(startMoment + 10 * SECONDS, 'First');

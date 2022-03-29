@@ -47,6 +47,10 @@ describe('PrintMessageRoutine', () => {
     await redis.del(MessageService.MESSAGES_SET_NAME);
   });
 
+  afterAll(async () => {
+    await redis.quit();
+  });
+
   describe('One worker', () => {
 
     it('should handle empty list of ready messages', async () => {
