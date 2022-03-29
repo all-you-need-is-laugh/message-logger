@@ -64,7 +64,9 @@ module.exports = {
       'skipWords': [
         'dto',
         'localhost',
+        'promisify',
         'redis',
+        'ttl',
         'unref',
         'zadd',
         'zrange',

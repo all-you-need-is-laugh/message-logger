@@ -1,5 +1,6 @@
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { INestApplication, Module, ValidationPipe } from '@nestjs/common';
+import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { MessagesModule } from './messages/messages.module';
 
@@ -12,7 +13,8 @@ import { MessagesModule } from './messages/messages.module';
         host: 'localhost',
         port: 6379,
       }
-    })
+    }),
+    CommonModule
   ],
 })
 export class AppModule {
