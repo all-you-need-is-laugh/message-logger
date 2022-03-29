@@ -1,5 +1,5 @@
-export enum PrintMessageIterationStatus {
+export enum MessageHandlerIterationStatus {
   ERROR_OCCURRED = 'ERROR_OCCURRED',
-  MESSAGE_HANDLED = 'MESSAGE_HANDLED',
+  MESSAGES_HANDLED = 'MESSAGES_HANDLED',
   NO_MESSAGES_ARE_READY = 'NO_MESSAGES_ARE_READY',
 }

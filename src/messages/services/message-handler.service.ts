@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrintMessageIterationStatus } from '../enums/print-message-iteration-status';
+import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessagePrintingService } from '../services/message-printing.service';
 import { MessageService } from '../services/message.service';
 
@@ -14,12 +14,12 @@ export class MessageHandlerService {
     private messagePrintingService: MessagePrintingService
   ) {}
 
-  async runIteration (): Promise<PrintMessageIterationStatus> {
+  async runIteration (): Promise<MessageHandlerIterationStatus> {
     try {
       const messagesReady = await this.messageService.listMessages();
 
       if (!messagesReady.length) {
-        return PrintMessageIterationStatus.NO_MESSAGES_ARE_READY;
+        return MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY;
       }
 
       let messagesHandled = 0;
@@ -32,13 +32,13 @@ export class MessageHandlerService {
         messagesHandled++;
       }
 
-      if (messagesHandled) return PrintMessageIterationStatus.MESSAGE_HANDLED;
+      if (messagesHandled) return MessageHandlerIterationStatus.MESSAGES_HANDLED;
 
       throw new Error('This state is not implemented!');
     } catch (error: unknown) {
       // TODO: replace with logger
       console.error('### > MessageHandlerService > runIteration > error', error);
-      return PrintMessageIterationStatus.ERROR_OCCURRED;
+      return MessageHandlerIterationStatus.ERROR_OCCURRED;
     }
   }
 
@@ -46,12 +46,12 @@ export class MessageHandlerService {
     try {
       const result = await this.runIteration();
       switch (result) {
-        case PrintMessageIterationStatus.ERROR_OCCURRED:
+        case MessageHandlerIterationStatus.ERROR_OCCURRED:
           return setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
-        case PrintMessageIterationStatus.MESSAGE_HANDLED:
+        case MessageHandlerIterationStatus.MESSAGES_HANDLED:
           // Go handle one more! (probably for the same time)
           return process.nextTick(() => this.runLoop());
-        case PrintMessageIterationStatus.NO_MESSAGES_ARE_READY:
+        case MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY:
           return setTimeout(() => this.runLoop(), WAIT_FOR_NEW_MESSAGES_DELAY).unref();
 
         default:

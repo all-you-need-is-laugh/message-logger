@@ -2,7 +2,7 @@ import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { Message } from '../entities/message.entity';
-import { PrintMessageIterationStatus } from '../enums/print-message-iteration-status';
+import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessageHandlerService } from './message-handler.service';
 import { MessagePrintingService } from './message-printing.service';
 import { MessageService } from './message.service';
@@ -56,7 +56,7 @@ describe('MessageHandlerService', () => {
     it('should handle empty list of ready messages', async () => {
       const result = await messageHandlerService.runIteration();
 
-      expect(result).toEqual(PrintMessageIterationStatus.NO_MESSAGES_ARE_READY);
+      expect(result).toEqual(MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY);
     });
 
     it('should handle first ready message from the queue', async () => {
@@ -69,7 +69,11 @@ describe('MessageHandlerService', () => {
 
       const result = await messageHandlerService.runIteration();
 
-      expect(result).toEqual(PrintMessageIterationStatus.MESSAGE_HANDLED);
+      expect(result).toEqual(MessageHandlerIterationStatus.MESSAGES_HANDLED);
+
+      const messagesLeft = await messageService.listMessages();
+
+      expect(messagesLeft).toEqual([]);
     });
 
     it('should handle errors (for example: no connection to Redis)', async () => {
@@ -97,7 +101,7 @@ describe('MessageHandlerService', () => {
 
       const result = await messageHandlerService.runIteration();
 
-      expect(result).toEqual(PrintMessageIterationStatus.ERROR_OCCURRED);
+      expect(result).toEqual(MessageHandlerIterationStatus.ERROR_OCCURRED);
     });
   });
 });
