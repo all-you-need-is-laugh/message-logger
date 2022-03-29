@@ -1,5 +1,4 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrintMessageIterationResult } from '../entities/print-message-iteration-result.entity';
 import { PrintMessageIterationStatus } from '../enums/print-message-iteration-status';
 import { MessagePrintingService } from '../services/message-printing.service';
 import { MessageService } from '../services/message.service';
@@ -15,11 +14,11 @@ export class PrintMessageRoutine implements OnModuleInit {
     process.nextTick(() => this.runLoop());
   }
 
-  async runIteration (): Promise<PrintMessageIterationResult> {
+  async runIteration (): Promise<PrintMessageIterationStatus> {
     const messagesReady = await this.messageService.listMessages();
 
     if (!messagesReady.length) {
-      return { status: PrintMessageIterationStatus.NO_MESSAGES_ARE_READY };
+      return PrintMessageIterationStatus.NO_MESSAGES_ARE_READY;
     }
 
     let messagesHandled = 0;
@@ -32,7 +31,7 @@ export class PrintMessageRoutine implements OnModuleInit {
       messagesHandled++;
     }
 
-    if (messagesHandled) return { status: PrintMessageIterationStatus.MESSAGE_HANDLED };
+    if (messagesHandled) return PrintMessageIterationStatus.MESSAGE_HANDLED;
 
     throw new Error('This state is not implemented!');
   }
@@ -40,7 +39,7 @@ export class PrintMessageRoutine implements OnModuleInit {
   async runLoop () {
     try {
       const result = await this.runIteration();
-      switch (result.status) {
+      switch (result) {
         case PrintMessageIterationStatus.MESSAGE_HANDLED:
           // Go handle one more! (probably for the same time)
           return process.nextTick(() => this.runLoop());
@@ -50,7 +49,7 @@ export class PrintMessageRoutine implements OnModuleInit {
 
         default:
           const exhaustiveCheck: never = result;
-          throw new Error(`Unhandled iteration result: ${JSON.stringify(exhaustiveCheck)}`);
+          throw new Error(`Unhandled iteration result: ${exhaustiveCheck}`);
       }
     } catch (err: unknown) {
       // TODO: replace with logger

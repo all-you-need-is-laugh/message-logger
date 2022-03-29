@@ -52,7 +52,7 @@ describe('PrintMessageRoutine', () => {
     it('should handle empty list of ready messages', async () => {
       const result = await printMessageRoutine.runIteration();
 
-      expect(result).toEqual({ status: PrintMessageIterationStatus.NO_MESSAGES_ARE_READY });
+      expect(result).toEqual(PrintMessageIterationStatus.NO_MESSAGES_ARE_READY);
     });
 
     it('should handle first ready message from the queue', async () => {
@@ -65,9 +65,7 @@ describe('PrintMessageRoutine', () => {
 
       const result = await printMessageRoutine.runIteration();
 
-      expect(result).toEqual({
-        status: PrintMessageIterationStatus.MESSAGE_HANDLED
-      });
+      expect(result).toEqual(PrintMessageIterationStatus.MESSAGE_HANDLED);
     });
   });
 });
