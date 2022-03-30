@@ -1,4 +1,4 @@
-import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { Message } from '../entities/message.entity';
@@ -25,7 +25,7 @@ describe('MessageService', () => {
     }).compile();
 
     messageService = moduleRef.get<MessageService>(MessageService);
-    redis = moduleRef.get<RedisService>(RedisService).getClient();
+    redis = moduleRef.get<Redis>(getRedisToken('default'));
 
     await redis.del(MessageService.MESSAGES_SET_NAME);
   });

@@ -1,4 +1,4 @@
-import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import delay from '../utils/delay';
@@ -7,7 +7,7 @@ import { LockService } from './lock.service';
 describe('LockService', () => {
   let lockService: LockService;
   let redis: Redis;
-  let testKey;
+  let testKey: string;
 
   const TTL = 10000;
 
@@ -26,7 +26,7 @@ describe('LockService', () => {
     }).compile();
 
     lockService = moduleRef.get<LockService>(LockService);
-    redis = moduleRef.get<RedisService>(RedisService).getClient();
+    redis = moduleRef.get<Redis>(getRedisToken('default'));
   });
 
   beforeEach(() => {

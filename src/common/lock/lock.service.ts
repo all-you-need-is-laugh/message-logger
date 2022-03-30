@@ -1,4 +1,4 @@
-import { RedisService } from '@liaoliaots/nestjs-redis';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import { v4 as uuidV4 } from 'uuid';
@@ -15,14 +15,12 @@ type LockSetResult = LockSetSuccessfully | LockSetUnsuccessfully;
 
 @Injectable()
 export class LockService {
-  private readonly redis: Redis;
-
   // TODO: read from config
   private static LOCK_PREFIX = 'lock';
 
-  constructor (private readonly redisService: RedisService) {
-    this.redis = this.redisService.getClient();
-  }
+  constructor (
+    @InjectRedis() private readonly redis: Redis
+  ) {}
 
   async touch (key: string, ttl: number): Promise<LockSetResult> {
     const lockKey = `${LockService.LOCK_PREFIX}:${key}`;

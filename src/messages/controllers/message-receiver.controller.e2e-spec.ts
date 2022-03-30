@@ -1,4 +1,4 @@
-import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
@@ -40,7 +40,7 @@ describe('MessageReceiverController (e2e)', () => {
     await app.init();
 
     server = app.getHttpServer();
-    redis = moduleRef.get<RedisService>(RedisService).getClient();
+    redis = moduleRef.get<Redis>(getRedisToken('default'));
   });
 
   afterAll(async () => {
