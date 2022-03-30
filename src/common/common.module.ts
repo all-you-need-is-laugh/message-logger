@@ -1,8 +1,8 @@
 import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import appConfig from '../config/app.config';
-import redisConfig from '../config/redis.config';
+import appConfig from './config/app.config';
+import redisConfig from './config/redis.config';
 import { LockService } from './lock/lock.service';
 
 @Global()
