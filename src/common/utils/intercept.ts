@@ -1,4 +1,4 @@
-import deferred from "./deferred";
+import deferred from './deferred';
 
 interface InterceptableMock<T = any, Y extends any[] = any> extends jest.Mock<T, Y> {
   deferredExecutionPromise: Promise<{ args: unknown[], proceed: (value: unknown) => void }>
@@ -14,7 +14,11 @@ const intercept = (original) => {
     return original(...args);
   }) as InterceptableMock<any, any>;
 
-  mock.deferredExecutionPromise = deferredStart.promise.then((args) => ({ args: args as unknown[], proceed: deferredExecution.resolve }));
+  mock.deferredExecutionPromise = deferredStart.promise
+    .then((args) => ({
+      args: args as unknown[],
+      proceed: deferredExecution.resolve
+    }));
 
   return mock;
 };

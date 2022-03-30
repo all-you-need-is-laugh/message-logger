@@ -105,7 +105,7 @@ describe('MessageHandlerService', () => {
         handlerB.handleMessage = handleMessageMockB;
 
         // Run both handlers
-        const iterations = [handlerA.runIteration(2), handlerB.runIteration(2)];
+        const iterations = [ handlerA.runIteration(2), handlerB.runIteration(2) ];
 
         // Wait for both handlers pick the message to handle
         const [ handlerAMessageContext, handlerBMessageContext ] = await Promise.all([
@@ -114,7 +114,7 @@ describe('MessageHandlerService', () => {
         ]);
 
         // We will call "Slow handler" handler, which picked "First" message
-        // Meanwile "Fast handler" must handle "Second" message (because "First" was locked by "Slow" one)
+        // Meanwhile "Fast handler" must handle "Second" message (because "First" was locked by "Slow" one)
         let proceedSlowHandler;
         let proceedFastHandler;
         let fastHandlerFinishedPromise;
@@ -158,7 +158,8 @@ describe('MessageHandlerService', () => {
         const startMoment = Date.now();
         let iteration = 0;
         do {
-          const message = new Message(startMoment - (NUMBER_OF_MESSAGES - iteration) * SECONDS, `Message #${iteration}`);
+          const timestamp = startMoment - (NUMBER_OF_MESSAGES - iteration) * SECONDS;
+          const message = new Message(timestamp, `Message #${iteration}`);
           expect(await messageService.publishMessage(message)).toBe(true);
         } while (++iteration < NUMBER_OF_MESSAGES);
 

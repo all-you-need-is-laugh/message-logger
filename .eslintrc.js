@@ -15,7 +15,7 @@ module.exports = {
   rules: {
     'array-bracket-newline': ['warn', { 'minItems': 4, 'multiline': true }],
     'array-bracket-spacing': ['warn', 'always'],
-    'array-element-newline': ['warn', { consistent: true }],
+    'array-element-newline': ['warn', 'consistent'],
     'arrow-spacing': 'warn',
     'computed-property-spacing': ['error', 'never'],
     'eol-last': ['warn', 'always'],
@@ -63,6 +63,7 @@ module.exports = {
       ],
       'skipWords': [
         'dto',
+        'interceptable',
         'localhost',
         'promisify',
         'redis',
