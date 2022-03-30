@@ -1,7 +1,9 @@
 import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { CommonModule } from '../../common/common.module';
+import messagesConfig from '../config/messages.config';
 import { Message } from '../entities/message.entity';
 import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessageHandlerService } from './message-handler.service';
@@ -25,7 +27,8 @@ describe('MessageHandlerService', () => {
             port: 6379,
           }
         }),
-        CommonModule
+        CommonModule,
+        ConfigModule.forFeature(messagesConfig)
       ],
       providers: [
         MessageService,
@@ -87,7 +90,8 @@ describe('MessageHandlerService', () => {
               retryStrategy: () => null,
             }
           }),
-          CommonModule
+          CommonModule,
+          ConfigModule.forFeature(messagesConfig)
         ],
         providers: [
           MessageService,

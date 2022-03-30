@@ -1,25 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { LockService } from '../../common/lock/lock.service';
+import messagesConfig from '../config/messages.config';
 import { Message } from '../entities/message.entity';
 import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessagePrintingService } from '../services/message-printing.service';
 import { MessageService } from '../services/message.service';
 
-// TODO: read values from config
-const WAIT_FOR_NEW_MESSAGES_DELAY = 1000;
-const RECOVERY_DELAY = 30000;
-const ITERATION_DURATION = 10000;
-const LOCK_DURATION = ITERATION_DURATION * 2;
-const ITERATION_BATCH_SIZE = 10;
-
 @Injectable()
 export class MessageHandlerService {
+
   constructor (
     private readonly messageService: MessageService,
     private readonly messagePrintingService: MessagePrintingService,
-    private readonly lockService: LockService
-  ) {
-  }
+    private readonly lockService: LockService,
+    @Inject(messagesConfig.KEY)
+    private readonly config: ConfigType<typeof messagesConfig>
+  ) { }
 
   async handleMessage (message: Message): Promise<boolean> {
     const printResult = await this.messagePrintingService.printMessage(message);
@@ -38,7 +35,7 @@ export class MessageHandlerService {
       }
 
       let messagesHandled = 0;
-      const stopIterationAt = Date.now() + ITERATION_DURATION;
+      const stopIterationAt = Date.now() + this.config.handler.iterationDuration;
       for (const message of messagesReady) {
         // Stop the iteration and start the new one with another batch of messages
         if (Date.now() >= stopIterationAt) {
@@ -47,7 +44,7 @@ export class MessageHandlerService {
             : MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
         }
 
-        const lockResult = await this.lockService.touch(`message_${message.id}`, LOCK_DURATION);
+        const lockResult = await this.lockService.touch(`message_${message.id}`, this.config.handler.lockDuration);
 
         if (!lockResult.succeeded) continue;
 
@@ -64,16 +61,17 @@ export class MessageHandlerService {
       return MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
     } catch (error: unknown) {
       // TODO: replace with logger
+      console.log('### > MessageHandlerService > runIteration > error', error);
       return MessageHandlerIterationStatus.ERROR_OCCURRED;
     }
   }
 
   async runLoop () {
     try {
-      const result = await this.runIteration(ITERATION_BATCH_SIZE);
+      const result = await this.runIteration(this.config.handler.iterationBatchSize);
       switch (result) {
         case MessageHandlerIterationStatus.ERROR_OCCURRED:
-          return setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
+          return setTimeout(() => this.runLoop(), this.config.handler.recoveryDelay).unref();
 
         case MessageHandlerIterationStatus.MESSAGES_HANDLED:
           // Go handle one more! (probably for the same time)
@@ -81,7 +79,7 @@ export class MessageHandlerService {
 
         case MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY:
         case MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY:
-          return setTimeout(() => this.runLoop(), WAIT_FOR_NEW_MESSAGES_DELAY).unref();
+          return setTimeout(() => this.runLoop(), this.config.handler.waitForNewMessagesDelay).unref();
 
         default:
           const exhaustiveCheck: never = result;
@@ -91,7 +89,7 @@ export class MessageHandlerService {
       // TODO: replace with logger
       console.error('### > MessageHandlerService > runLoop > exception', exception);
       // Try to restart after some bigger delay
-      setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
+      setTimeout(() => this.runLoop(), this.config.handler.recoveryDelay).unref();
     }
   }
 }

@@ -1,4 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import messagesConfig from './config/messages.config';
 import { MessageReceiverController } from './controllers/message-receiver.controller';
 import { PrintMessageRoutine } from './routines/print-message.routine';
 import { MessageHandlerService } from './services/message-handler.service';
@@ -16,6 +18,7 @@ export class MessagesModule {
 
     return {
       module: MessagesModule,
+      imports: [ ConfigModule.forFeature(messagesConfig) ],
       controllers: [ MessageReceiverController ],
       providers: [
         MessageService,
