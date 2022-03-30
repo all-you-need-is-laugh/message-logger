@@ -14,7 +14,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     if (typeof exceptionResponse === 'string') {
       message = exceptionResponse;
     } else {
-      message = exceptionResponse['message'] || JSON.stringify(exceptionResponse);
+      message = (exceptionResponse as Record<string, string>)['message'] || JSON.stringify(exceptionResponse);
     }
 
     response

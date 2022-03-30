@@ -66,12 +66,13 @@ export class MessageHandlerService {
     }
   }
 
-  async runLoop () {
+  async runLoop (): Promise<void> {
     try {
       const result = await this.runIteration(this.config.handler.iterationBatchSize);
       switch (result) {
         case MessageHandlerIterationStatus.ERROR_OCCURRED:
-          return setTimeout(() => this.runLoop(), this.config.handler.recoveryDelay).unref();
+          setTimeout(() => this.runLoop(), this.config.handler.recoveryDelay).unref();
+          return;
 
         case MessageHandlerIterationStatus.MESSAGES_HANDLED:
           // Go handle one more! (probably for the same time)
@@ -79,7 +80,8 @@ export class MessageHandlerService {
 
         case MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY:
         case MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY:
-          return setTimeout(() => this.runLoop(), this.config.handler.waitForNewMessagesDelay).unref();
+          setTimeout(() => this.runLoop(), this.config.handler.waitForNewMessagesDelay).unref();
+          return;
 
         default:
           const exhaustiveCheck: never = result;

@@ -44,7 +44,7 @@ describe('MessageHandlerService', () => {
         {
           provide: MessagePrintingService,
           useValue: {
-            printMessage: (message) => {
+            printMessage: (message: Message) => {
               if (printedMessages[message.id]) {
                 throw new Error(`Message "${message.text}" was already printed!`);
               }

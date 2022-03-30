@@ -23,7 +23,6 @@ import { MessagesModule } from './messages/messages.module';
   ],
 })
 export class AppModule {
-  // TODO: set TS config setting "noImplicitAny": true,
   static async bootstrap (app: INestApplication) {
     app.useGlobalPipes(
       new ValidationPipe({

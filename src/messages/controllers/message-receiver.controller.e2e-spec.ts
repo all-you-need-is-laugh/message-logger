@@ -1,6 +1,7 @@
 import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import Redis from 'ioredis';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
 import { CommonModule } from '../../common/common.module';
@@ -14,8 +15,8 @@ const stringifyQuery = (params: Record<string, string>): string => {
 
 describe('MessageReceiverController (e2e)', () => {
   let app: INestApplication;
-  let server;
-  let redis;
+  let server: any;
+  let redis: Redis;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
