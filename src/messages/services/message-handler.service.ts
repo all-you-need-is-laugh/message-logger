@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { LockService } from '../../common/lock/lock.service';
 import messagesConfig from '../config/messages.config';
@@ -9,6 +9,7 @@ import { MessageService } from '../services/message.service';
 
 @Injectable()
 export class MessageHandlerService {
+  private readonly logger = new Logger(MessageHandlerService.name);
 
   constructor (
     private readonly messageService: MessageService,
@@ -34,11 +35,15 @@ export class MessageHandlerService {
         return MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY;
       }
 
+      this.logger.log(`runIteration > messages ready: ${messagesReady.length}/${batchSize}`);
+
       let messagesHandled = 0;
       const stopIterationAt = Date.now() + this.config.handler.iterationDuration;
       for (const message of messagesReady) {
         // Stop the iteration and start the new one with another batch of messages
         if (Date.now() >= stopIterationAt) {
+          this.logger.log(`runIteration < messages handled before timeout: ${messagesHandled}/${messagesReady.length}`);
+
           return messagesHandled
             ? MessageHandlerIterationStatus.MESSAGES_HANDLED
             : MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
@@ -56,12 +61,13 @@ export class MessageHandlerService {
         if (handleResult) messagesHandled++;
       }
 
+      this.logger.log(`runIteration < messages handled: ${messagesHandled}/${messagesReady.length}`);
+
       if (messagesHandled) return MessageHandlerIterationStatus.MESSAGES_HANDLED;
 
       return MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
-    } catch (error: unknown) {
-      // TODO: replace with logger
-      console.log('### > MessageHandlerService > runIteration > error', error);
+    } catch (exception: unknown) {
+      this.logger.error(`runIteration < exception: ${exception}`);
       return MessageHandlerIterationStatus.ERROR_OCCURRED;
     }
   }
@@ -88,8 +94,7 @@ export class MessageHandlerService {
           throw new Error(`Unhandled iteration result: ${exhaustiveCheck}`);
       }
     } catch (exception: unknown) {
-      // TODO: replace with logger
-      console.error('### > MessageHandlerService > runLoop > exception', exception);
+      this.logger.error(`runLoop exception: ${exception}`);
       // Try to restart after some bigger delay
       setTimeout(() => this.runLoop(), this.config.handler.recoveryDelay).unref();
     }

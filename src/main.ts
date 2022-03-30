@@ -1,16 +1,22 @@
+import { Logger, NestApplicationOptions } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import appConfig from './common/config/app.config';
 
 async function bootstrap () {
-  const app = await NestFactory.create(AppModule);
+  const { environment, port } = appConfig();
+  const appOptions = {} as NestApplicationOptions;
+
+  if (environment === 'production') {
+    appOptions.logger = [ 'error', 'warn' ];
+  }
+
+  const app = await NestFactory.create(AppModule, appOptions);
 
   AppModule.bootstrap(app);
 
-  const port = appConfig().port;
   await app.listen(port);
 
-  // TODO: replace with logger
-  console.log(`Server is listening on port ${port}`);
+  Logger.log(`Server is listening on port ${port}`, 'main');
 }
 bootstrap();
