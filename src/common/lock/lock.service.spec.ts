@@ -1,8 +1,7 @@
-import { getRedisToken, RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+import { getRedisToken } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
-import redisConfig from '../../config/redis.config';
+import { CommonModule } from '../common.module';
 import delay from '../utils/delay';
 import { LockService } from './lock.service';
 
@@ -15,14 +14,7 @@ describe('LockService', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        RedisModule.forRootAsync({
-          imports: [ ConfigModule.forFeature(redisConfig) ],
-          inject: [ redisConfig.KEY ],
-          useFactory: (config: ConfigType<typeof redisConfig>): RedisModuleOptions => ({ config })
-        })
-      ],
-      providers: [ LockService ],
+      imports: [ CommonModule ],
     }).compile();
 
     lockService = moduleRef.get<LockService>(LockService);

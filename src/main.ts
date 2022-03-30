@@ -7,6 +7,10 @@ async function bootstrap () {
 
   AppModule.bootstrap(app);
 
-  await app.listen(appConfig().port);
+  const port = appConfig().port;
+  await app.listen(port);
+
+  // TODO: replace with logger
+  console.log(`Server is listening on port ${port}`);
 }
 bootstrap();
