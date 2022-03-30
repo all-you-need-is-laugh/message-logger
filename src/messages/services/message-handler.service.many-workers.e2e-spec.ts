@@ -89,7 +89,6 @@ describe('MessageHandlerService', () => {
         const [ handlerA, handlerB ] = messageHandlerServices;
 
         // Add 2 messages
-
         const startMoment = Date.now();
         const firstMessage  = new Message(startMoment - 2 * SECONDS, 'First - Slow');
         const secondMessage = new Message(startMoment - 1 * SECONDS, 'Second - Fast');
@@ -145,7 +144,7 @@ describe('MessageHandlerService', () => {
 
     describe('Load test', () => {
       let messageHandlerServices: MessageHandlerService[];
-      const NUMBER_OF_WORKERS = 10;
+      const NUMBER_OF_WORKERS = 30;
 
       beforeAll(async () => {
         messageHandlerServices = await Promise.all(

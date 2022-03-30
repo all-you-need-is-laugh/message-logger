@@ -8,6 +8,7 @@ import { MessageService } from '../services/message.service';
 // TODO: read delay values from config
 const WAIT_FOR_NEW_MESSAGES_DELAY = 1000;
 const RECOVERY_DELAY = 30000;
+const ITERATION_DURATION = 10000;
 const LOCK_DURATION = ITERATION_DURATION * 2;
 
 @Injectable()
@@ -36,8 +37,15 @@ export class MessageHandlerService {
       }
 
       let messagesHandled = 0;
+      const stopIterationAt = Date.now() + ITERATION_DURATION;
       for (const message of messagesReady) {
-        // TODO: check iteration timeout here
+        // Stop the iteration and start the new one with another batch of messages
+        if (Date.now() >= stopIterationAt) {
+          return messagesHandled
+            ? MessageHandlerIterationStatus.MESSAGES_HANDLED
+            : MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
+        }
+
         const lockResult = await this.lockService.touch(`message_${message.id}`, LOCK_DURATION);
 
         if (!lockResult.succeeded) continue;
@@ -52,7 +60,7 @@ export class MessageHandlerService {
 
       if (messagesHandled) return MessageHandlerIterationStatus.MESSAGES_HANDLED;
 
-      throw new Error('This state is not implemented!');
+      return MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY;
     } catch (error: unknown) {
       // TODO: replace with logger
       return MessageHandlerIterationStatus.ERROR_OCCURRED;
@@ -65,9 +73,12 @@ export class MessageHandlerService {
       switch (result) {
         case MessageHandlerIterationStatus.ERROR_OCCURRED:
           return setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
+
         case MessageHandlerIterationStatus.MESSAGES_HANDLED:
           // Go handle one more! (probably for the same time)
           return process.nextTick(() => this.runLoop());
+
+        case MessageHandlerIterationStatus.ALL_MESSAGES_ARE_BUSY:
         case MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY:
           return setTimeout(() => this.runLoop(), WAIT_FOR_NEW_MESSAGES_DELAY).unref();
 
@@ -77,6 +88,7 @@ export class MessageHandlerService {
       }
     } catch (exception: unknown) {
       // TODO: replace with logger
+      console.error('### > MessageHandlerService > runLoop > exception', exception);
       // Try to restart after some bigger delay
       setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
     }
