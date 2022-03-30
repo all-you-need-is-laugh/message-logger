@@ -5,11 +5,12 @@ import { MessageHandlerIterationStatus } from '../enums/message-handler-iteratio
 import { MessagePrintingService } from '../services/message-printing.service';
 import { MessageService } from '../services/message.service';
 
-// TODO: read delay values from config
+// TODO: read values from config
 const WAIT_FOR_NEW_MESSAGES_DELAY = 1000;
 const RECOVERY_DELAY = 30000;
 const ITERATION_DURATION = 10000;
 const LOCK_DURATION = ITERATION_DURATION * 2;
+const ITERATION_BATCH_SIZE = 10;
 
 @Injectable()
 export class MessageHandlerService {
@@ -28,7 +29,7 @@ export class MessageHandlerService {
     return this.messageService.remove(message);
   }
 
-  async runIteration (batchSize = 10): Promise<MessageHandlerIterationStatus> {
+  async runIteration (batchSize: number): Promise<MessageHandlerIterationStatus> {
     try {
       const messagesReady = await this.messageService.listMessages({ count: batchSize });
 
@@ -69,7 +70,7 @@ export class MessageHandlerService {
 
   async runLoop () {
     try {
-      const result = await this.runIteration();
+      const result = await this.runIteration(ITERATION_BATCH_SIZE);
       switch (result) {
         case MessageHandlerIterationStatus.ERROR_OCCURRED:
           return setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();

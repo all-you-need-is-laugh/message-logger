@@ -55,7 +55,7 @@ describe('MessageHandlerService', () => {
   describe('One worker', () => {
 
     it('should handle empty list of ready messages', async () => {
-      const result = await messageHandlerService.runIteration();
+      const result = await messageHandlerService.runIteration(1);
 
       expect(result).toEqual(MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY);
     });
@@ -101,7 +101,7 @@ describe('MessageHandlerService', () => {
 
       messageHandlerService = moduleRef.get<MessageHandlerService>(MessageHandlerService);
 
-      const result = await messageHandlerService.runIteration();
+      const result = await messageHandlerService.runIteration(1);
 
       expect(result).toEqual(MessageHandlerIterationStatus.ERROR_OCCURRED);
     });
