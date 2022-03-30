@@ -1,10 +1,11 @@
-import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { Scope } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import Redis from 'ioredis';
 import { CommonModule } from '../../common/common.module';
 import intercept from '../../common/utils/intercept';
+import redisConfig from '../../config/redis.config';
 import messagesConfig from '../config/messages.config';
 import { Message } from '../entities/message.entity';
 import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
@@ -23,12 +24,10 @@ describe('MessageHandlerService', () => {
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [
-        // TODO: read test config from service
-        RedisModule.forRoot({
-          config: {
-            host: 'localhost',
-            port: 6379,
-          }
+        RedisModule.forRootAsync({
+          imports: [ ConfigModule.forFeature(redisConfig) ],
+          inject: [ redisConfig.KEY ],
+          useFactory: (config: ConfigType<typeof redisConfig>): RedisModuleOptions => ({ config })
         }),
         CommonModule,
         ConfigModule.forFeature(messagesConfig)

@@ -1,6 +1,8 @@
-import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
+import redisConfig from '../../config/redis.config';
 import { Message } from '../entities/message.entity';
 import { MessageService } from './message.service';
 
@@ -13,12 +15,10 @@ describe('MessageService', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
-        // TODO: read test config from service
-        RedisModule.forRoot({
-          config: {
-            host: 'localhost',
-            port: 6379,
-          }
+        RedisModule.forRootAsync({
+          imports: [ ConfigModule.forFeature(redisConfig) ],
+          inject: [ redisConfig.KEY ],
+          useFactory: (config: ConfigType<typeof redisConfig>): RedisModuleOptions => ({ config })
         })
       ],
       providers: [ MessageService ],

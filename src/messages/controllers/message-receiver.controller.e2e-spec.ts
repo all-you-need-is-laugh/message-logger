@@ -1,11 +1,13 @@
-import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
+import { getRedisToken, RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
 import { CommonModule } from '../../common/common.module';
 import { ResponsePayload } from '../../common/entities/response-payload.entity';
+import redisConfig from '../../config/redis.config';
 import { MessagesModule } from '../messages.module';
 import { MessageService } from '../services/message.service';
 
@@ -21,12 +23,10 @@ describe('MessageReceiverController (e2e)', () => {
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
-        // TODO: read test config from service
-        RedisModule.forRoot({
-          config: {
-            host: 'localhost',
-            port: 6379,
-          }
+        RedisModule.forRootAsync({
+          imports: [ ConfigModule.forFeature(redisConfig) ],
+          inject: [ redisConfig.KEY ],
+          useFactory: (config: ConfigType<typeof redisConfig>): RedisModuleOptions => ({ config })
         }),
         CommonModule,
         MessagesModule.register({ skipRoutines: true })

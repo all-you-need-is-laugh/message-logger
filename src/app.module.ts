@@ -1,9 +1,10 @@
-import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { INestApplication, Module, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import appConfig from './config/app.config';
+import redisConfig from './config/redis.config';
 import { MessagesModule } from './messages/messages.module';
 
 @Module({
@@ -13,13 +14,11 @@ import { MessagesModule } from './messages/messages.module';
     }),
     CommonModule,
     MessagesModule.register(),
-    // TODO: Read Redis config from config
-    RedisModule.forRoot({
-      config: {
-        host: 'localhost',
-        port: 6379,
-      }
-    }),
+    RedisModule.forRootAsync({
+      imports: [ ConfigModule.forFeature(redisConfig) ],
+      inject: [ redisConfig.KEY ],
+      useFactory: (config: ConfigType<typeof redisConfig>): RedisModuleOptions => ({ config })
+    })
   ],
 })
 export class AppModule {
