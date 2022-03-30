@@ -2,6 +2,7 @@ import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import appConfig from './config/app.config';
+import lockConfig from './config/lock.config';
 import redisConfig from './config/redis.config';
 import { LockService } from './lock/lock.service';
 
@@ -16,6 +17,7 @@ import { LockService } from './lock/lock.service';
     ConfigModule.forRoot({
       envFilePath: [ ...(appConfig().environment ? [ `.env.${appConfig().environment}` ] : []), '.env' ]
     }),
+    ConfigModule.forFeature(lockConfig)
   ],
   providers: [ LockService ],
   exports: [
