@@ -1,4 +1,4 @@
-import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
@@ -6,6 +6,7 @@ import { AppModule } from '../../app.module';
 import { CommonModule } from '../../common/common.module';
 import { ResponsePayload } from '../../common/entities/response-payload.entity';
 import { MessagesModule } from '../messages.module';
+import { MessageService } from '../services/message.service';
 
 const stringifyQuery = (params: Record<string, string>): string => {
   return new URLSearchParams(params).toString();
@@ -14,6 +15,7 @@ const stringifyQuery = (params: Record<string, string>): string => {
 describe('MessageReceiverController (e2e)', () => {
   let app: INestApplication;
   let server;
+  let redis;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -23,7 +25,6 @@ describe('MessageReceiverController (e2e)', () => {
           config: {
             host: 'localhost',
             port: 6379,
-            db: 2
           }
         }),
         CommonModule,
@@ -38,9 +39,12 @@ describe('MessageReceiverController (e2e)', () => {
     await app.init();
 
     server = app.getHttpServer();
+    redis = moduleRef.get<RedisService>(RedisService).getClient();
   });
 
   afterAll(async () => {
+    await redis?.del(MessageService.MESSAGES_SET_NAME);
+
     await app?.close();
   });
 

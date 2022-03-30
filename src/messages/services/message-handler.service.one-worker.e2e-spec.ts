@@ -23,7 +23,6 @@ describe('MessageHandlerService', () => {
           config: {
             host: 'localhost',
             port: 6379,
-            db: 2
           }
         }),
         CommonModule
