@@ -15,9 +15,9 @@ const ITERATION_BATCH_SIZE = 10;
 @Injectable()
 export class MessageHandlerService {
   constructor (
-    private messageService: MessageService,
-    private messagePrintingService: MessagePrintingService,
-    private lockService: LockService
+    private readonly messageService: MessageService,
+    private readonly messagePrintingService: MessagePrintingService,
+    private readonly lockService: LockService
   ) {
   }
 

@@ -7,7 +7,7 @@ import { MessageService } from '../services/message.service';
 @Controller('printMeAt')
 export class MessageReceiverController {
   constructor (
-    private messageService: MessageService
+    private readonly messageService: MessageService
   ) {}
 
   @Get('/')
