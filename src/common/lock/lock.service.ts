@@ -3,10 +3,6 @@ import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import { v4 as uuidV4 } from 'uuid';
 
-interface LockOptions {
-  ttl?: number
-}
-
 interface LockSetSuccessfully {
   succeeded: true,
   release: () => void
@@ -23,13 +19,12 @@ export class LockService {
 
   // TODO: read from config
   private static LOCK_PREFIX = 'lock';
-  private static DEFAULT_TTL = 30000;
 
   constructor (private readonly redisService: RedisService) {
     this.redis = this.redisService.getClient();
   }
 
-  async touch (key: string, { ttl = LockService.DEFAULT_TTL }: LockOptions = {}): Promise<LockSetResult> {
+  async touch (key: string, ttl: number): Promise<LockSetResult> {
     const lockKey = `${LockService.LOCK_PREFIX}:${key}`;
     const lockValue = uuidV4();
     const result = await this.redis.set(lockKey, lockValue, 'PX', ttl, 'NX');

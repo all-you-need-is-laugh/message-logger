@@ -9,6 +9,8 @@ describe('LockService', () => {
   let redis: Redis;
   let testKey;
 
+  const TTL = 10000;
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
@@ -37,34 +39,34 @@ describe('LockService', () => {
   });
 
   it('should touch lock for passed key', async () => {
-    expect((await lockService.touch(testKey)).succeeded).toBe(true);
+    expect((await lockService.touch(testKey, TTL)).succeeded).toBe(true);
   });
 
   it('should touch lock for passed key, but only once during the specified TTL', async () => {
-    expect((await lockService.touch(testKey)).succeeded).toBe(true);
-    expect((await lockService.touch(testKey)).succeeded).toBe(false);
+    expect((await lockService.touch(testKey, TTL)).succeeded).toBe(true);
+    expect((await lockService.touch(testKey, TTL)).succeeded).toBe(false);
   });
 
   it('should be able to release lock', async () => {
     expect.assertions(2);
 
-    const firstResult = await lockService.touch(testKey);
+    const firstResult = await lockService.touch(testKey, TTL);
 
     if (!firstResult.succeeded) return;
     expect(await firstResult.release()).toBe(true);
 
-    expect((await lockService.touch(testKey)).succeeded).toBe(true);
+    expect((await lockService.touch(testKey, TTL)).succeeded).toBe(true);
   });
 
   it('should allow to release lock only for setter request', async () => {
     expect.assertions(2);
 
-    const firstResult = await lockService.touch(testKey, { ttl: 1 });
+    const firstResult = await lockService.touch(testKey, 1);
     if (!firstResult.succeeded) return;
 
     await delay(2);
 
-    const secondResult = await lockService.touch(testKey, { ttl: 10000 });
+    const secondResult = await lockService.touch(testKey, TTL);
     if (!secondResult.succeeded) return;
 
     expect(await firstResult.release()).toBe(false);

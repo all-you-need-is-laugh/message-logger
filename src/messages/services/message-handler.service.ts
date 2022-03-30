@@ -8,6 +8,7 @@ import { MessageService } from '../services/message.service';
 // TODO: read delay values from config
 const WAIT_FOR_NEW_MESSAGES_DELAY = 1000;
 const RECOVERY_DELAY = 30000;
+const LOCK_DURATION = ITERATION_DURATION * 2;
 
 @Injectable()
 export class MessageHandlerService {
@@ -26,7 +27,7 @@ export class MessageHandlerService {
     return this.messageService.remove(message);
   }
 
-  async runIteration (batchSize = 1): Promise<MessageHandlerIterationStatus> {
+  async runIteration (batchSize = 10): Promise<MessageHandlerIterationStatus> {
     try {
       const messagesReady = await this.messageService.listMessages({ count: batchSize });
 
@@ -37,7 +38,7 @@ export class MessageHandlerService {
       let messagesHandled = 0;
       for (const message of messagesReady) {
         // TODO: check iteration timeout here
-        const lockResult = await this.lockService.touch(`message_${message.id}`);
+        const lockResult = await this.lockService.touch(`message_${message.id}`, LOCK_DURATION);
 
         if (!lockResult.succeeded) continue;
 
