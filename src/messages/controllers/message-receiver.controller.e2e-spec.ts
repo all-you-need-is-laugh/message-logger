@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
+import { CommonModule } from '../../common/common.module';
 import { ResponsePayload } from '../../common/entities/response-payload.entity';
 import { MessagesModule } from '../messages.module';
 
@@ -25,6 +26,7 @@ describe('MessageReceiverController (e2e)', () => {
             db: 2
           }
         }),
+        CommonModule,
         MessagesModule.register({ skipRoutines: true })
       ],
     }).compile();
@@ -39,7 +41,7 @@ describe('MessageReceiverController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   describe('[GET] /printMeAt', () => {

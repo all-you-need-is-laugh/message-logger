@@ -1,6 +1,7 @@
 import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { Test } from '@nestjs/testing';
 import Redis from 'ioredis';
+import { CommonModule } from '../../common/common.module';
 import { Message } from '../entities/message.entity';
 import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessageHandlerService } from './message-handler.service';
@@ -24,7 +25,8 @@ describe('MessageHandlerService', () => {
             port: 6379,
             db: 2
           }
-        })
+        }),
+        CommonModule
       ],
       providers: [
         MessageService,
@@ -44,11 +46,11 @@ describe('MessageHandlerService', () => {
   });
 
   afterEach(async () => {
-    await redis.del(MessageService.MESSAGES_SET_NAME);
+    await redis?.del(MessageService.MESSAGES_SET_NAME);
   });
 
   afterAll(async () => {
-    await redis.quit();
+    await redis?.quit();
   });
 
   describe('One worker', () => {
@@ -59,7 +61,7 @@ describe('MessageHandlerService', () => {
       expect(result).toEqual(MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY);
     });
 
-    it('should handle first ready message from the queue', async () => {
+    it('should handle all ready message from the queue', async () => {
       const startMoment = Date.now();
       const firstMessage  = new Message(startMoment - 2 * SECONDS, 'First');
       const secondMessage = new Message(startMoment - 1 * SECONDS, 'Second');
@@ -67,7 +69,7 @@ describe('MessageHandlerService', () => {
       expect(await messageService.publishMessage(firstMessage)).toBe(true);
       expect(await messageService.publishMessage(secondMessage)).toBe(true);
 
-      const result = await messageHandlerService.runIteration();
+      const result = await messageHandlerService.runIteration(2);
 
       expect(result).toEqual(MessageHandlerIterationStatus.MESSAGES_HANDLED);
 
@@ -85,7 +87,8 @@ describe('MessageHandlerService', () => {
               // disable retry for test
               retryStrategy: () => null,
             }
-          })
+          }),
+          CommonModule
         ],
         providers: [
           MessageService,

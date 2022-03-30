@@ -1,7 +1,8 @@
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { LockService } from './lock/lock.service';
 
+@Global()
 @Module({
   imports: [
     // TODO: Read Redis config from config
@@ -12,6 +13,7 @@ import { LockService } from './lock/lock.service';
       }
     })
   ],
-  providers: [ LockService ]
+  providers: [ LockService ],
+  exports: [ LockService ]
 })
 export class CommonModule {}
