@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { LockService } from '../../common/lock/lock.service';
+import { Message } from '../entities/message.entity';
 import { MessageHandlerIterationStatus } from '../enums/message-handler-iteration-status';
 import { MessagePrintingService } from '../services/message-printing.service';
 import { MessageService } from '../services/message.service';
@@ -11,12 +13,22 @@ const RECOVERY_DELAY = 30000;
 export class MessageHandlerService {
   constructor (
     private messageService: MessageService,
-    private messagePrintingService: MessagePrintingService
-  ) {}
+    private messagePrintingService: MessagePrintingService,
+    private lockService: LockService
+  ) {
+  }
 
-  async runIteration (): Promise<MessageHandlerIterationStatus> {
+  async handleMessage (message: Message): Promise<boolean> {
+    const printResult = await this.messagePrintingService.printMessage(message);
+
+    if (!printResult) return false;
+
+    return this.messageService.remove(message);
+  }
+
+  async runIteration (batchSize = 1): Promise<MessageHandlerIterationStatus> {
     try {
-      const messagesReady = await this.messageService.listMessages();
+      const messagesReady = await this.messageService.listMessages({ count: batchSize });
 
       if (!messagesReady.length) {
         return MessageHandlerIterationStatus.NO_MESSAGES_ARE_READY;
@@ -24,12 +36,17 @@ export class MessageHandlerService {
 
       let messagesHandled = 0;
       for (const message of messagesReady) {
-      // TODO: set lock here
-        if (await this.messagePrintingService.printMessage(message)) {
-          await this.messageService.remove(message);
-        }
-        // TODO: release lock here
-        messagesHandled++;
+        // TODO: check iteration timeout here
+        const lockResult = await this.lockService.touch(`message_${message.id}`);
+
+        if (!lockResult.succeeded) continue;
+
+        const handleResult = await this.handleMessage(message);
+
+        // Just don't release lock here - keep it set for concurrency resolution
+        // await lockResult.release();
+
+        if (handleResult) messagesHandled++;
       }
 
       if (messagesHandled) return MessageHandlerIterationStatus.MESSAGES_HANDLED;
@@ -37,7 +54,6 @@ export class MessageHandlerService {
       throw new Error('This state is not implemented!');
     } catch (error: unknown) {
       // TODO: replace with logger
-      console.error('### > MessageHandlerService > runIteration > error', error);
       return MessageHandlerIterationStatus.ERROR_OCCURRED;
     }
   }
@@ -60,7 +76,6 @@ export class MessageHandlerService {
       }
     } catch (exception: unknown) {
       // TODO: replace with logger
-      console.error('### > MessageHandlerService > runLoop > exception', exception);
       // Try to restart after some bigger delay
       setTimeout(() => this.runLoop(), RECOVERY_DELAY).unref();
     }

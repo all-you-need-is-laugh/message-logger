@@ -15,7 +15,7 @@ module.exports = {
   rules: {
     'array-bracket-newline': ['warn', { 'minItems': 4, 'multiline': true }],
     'array-bracket-spacing': ['warn', 'always'],
-    'array-element-newline': ['warn', { 'minItems': 4, 'multiline': true }],
+    'array-element-newline': ['warn', { consistent: true }],
     'arrow-spacing': 'warn',
     'computed-property-spacing': ['error', 'never'],
     'eol-last': ['warn', 'always'],
