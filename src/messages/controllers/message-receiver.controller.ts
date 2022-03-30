@@ -4,6 +4,7 @@ import { PrintMeAtDto } from '../dtos/print-me-at.dto';
 import { Message } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 
+// TODO: Add support of OpenAPI
 @Controller('printMeAt')
 export class MessageReceiverController {
   constructor (
